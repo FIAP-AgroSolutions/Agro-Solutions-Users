@@ -1,0 +1,29 @@
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    ports:
+      - "1434:1434"
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: password@1
+    volumes:
+      - db_data:/var/opt/mssql
+
+  users-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
+    environment:
+      ConnectionStrings__DbConnection: "Server=database,1433;Database=Users;User Id=sa;Password=password@1;TrustServerCertificate=True;Encrypt=False;"
+      Jwt__Key: "DeelopmentIUzaP66%+W|yX0=3*"
+      Jwt__Issuer: "Users.API"
+      Jwt__Audience: "Users.API.Client"
+      ASPNETCORE_URLS: "http://+:80"
+    depends_on:
+      - database
+
+volumes:
+  db_data:
